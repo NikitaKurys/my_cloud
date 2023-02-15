@@ -8,8 +8,7 @@ from .models import Profile, File, UserLog
 class ProfileAdmin(admin.ModelAdmin):
     autocomplete_fields = ('user',)
     search_fields = ('user__username',)
-    list_display = ('user', 'gender', 'avatar')
-    list_filter = ('gender',)
+    list_display = ('user', 'avatar')
     list_per_page = 10
 
 

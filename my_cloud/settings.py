@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    'cloud.apps.CloudConfig'
+    'cloud.apps.CloudConfig',
 ]
 
 MIDDLEWARE = [

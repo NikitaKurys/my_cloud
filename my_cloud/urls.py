@@ -16,14 +16,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from cloud.views import UserView, FileView, get_link, get_file
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
-    path('registr/', UserView.as_view(), ),
-    path('files/', FileView.as_view()),
-    path('link/', get_link),
-    path('link/<str:link>/', get_file),
+    path('api/v1/cloud/', include('cloud.urls')),
 ]

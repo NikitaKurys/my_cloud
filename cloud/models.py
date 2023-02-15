@@ -7,13 +7,7 @@ from cloud.utils import get_image_path, get_file_path, get_download_link
 class Profile(models.Model):
     """Профиль юзера"""
 
-    GENDER = [
-        ('0', 'Жен'),
-        ('1', 'Муж'),
-    ]
-
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='пользователь')
-    gender = models.CharField(max_length=1, choices=GENDER, blank=True, verbose_name='пол')
     avatar = models.ImageField(upload_to=get_image_path, default='default/avatar.svg', verbose_name='аватар')
 
     class Meta:
