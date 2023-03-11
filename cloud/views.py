@@ -1,24 +1,26 @@
 from datetime import date
 
+from django.db.models import Sum, Count
 from django.http import FileResponse
-from django.views import View
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import CreateAPIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from cloud.serializers import UserRegistrSerializer, FileSerializer
+from cloud.serializers import RegistrUserSerializer, FileSerializer
 from .models import User, File
 
 
-class UserRegistrView(CreateAPIView):
-    serializer_class = UserRegistrSerializer
+class RegistrUserView(CreateAPIView):
     queryset = User.objects.all()
 
+    serializer_class = RegistrUserSerializer
+
+    permission_classes = [AllowAny]
+
     def post(self, request):
-        serializer = UserRegistrSerializer(data=request.data)
+        serializer = RegistrUserSerializer(data=request.data)
 
         data = {}
 
@@ -48,7 +50,8 @@ class FileView(CreateAPIView):
     def get(self, request):
 
         if 'id' not in request.query_params:
-            files = self.get_queryset().values('id', 'size', 'upload_date', 'last_download_date', 'comment', 'file')
+            files = self.get_queryset().values('id', 'size', 'upload_date',
+                                               'last_download_date', 'comment', 'file', 'file_name')
             return Response(files)
 
         file = self.get_queryset().filter(id=request.query_params['id']).first()
@@ -66,14 +69,14 @@ class FileView(CreateAPIView):
 
     def post(self, request):
         serializer = FileSerializer(data=request.data)
+
         data = {}
 
         if serializer.is_valid():
             serializer.create(user_id=request.user.id, file=request.FILES['file'])
 
-            data = {
-                'message': 'The file has been added to the storage',
-            }
+            data = self.get_queryset().values('id', 'user__username', 'size', 'path_to_the_file', 'upload_date',
+                                              'last_download_date', 'comment', 'file_name')
 
             return Response(data, status=status.HTTP_200_OK)
 
@@ -90,9 +93,9 @@ class FileView(CreateAPIView):
             serializer.patch(
                 user_id=request.user.id,
             )
-            data = {
-                'message': 'The file has been updated in the storage'
-            }
+
+            data = self.get_queryset().values('id', 'user__username', 'size', 'file_name', 'upload_date',
+                                              'last_download_date', 'comment')
 
             return Response(data)
 
@@ -101,13 +104,19 @@ class FileView(CreateAPIView):
         return Response(data)
 
     def delete(self, request):
-        deleted_file = File.objects.filter(user_id=request.user.id).all().filter(
-            id=int(request.query_params['id'])).first()
+        if request.user.is_staff:
+            deleted_file = File.objects.filter(id=int(request.query_params['id'])).first()
+        else:
+            deleted_file = File.objects.filter(user_id=request.user.id).all().filter(
+                id=int(request.query_params['id'])).first()
 
         if deleted_file:
             deleted_file.delete()
 
-            return Response(status.HTTP_200_OK)
+            data = self.get_queryset().values('id', 'user__username', 'size', 'file_name', 'upload_date',
+                                              'last_download_date', 'comment')
+
+            return Response(data, status.HTTP_200_OK)
 
         data = {
             'message': 'The file not found',
@@ -115,33 +124,48 @@ class FileView(CreateAPIView):
 
         return Response(data, status.HTTP_404_NOT_FOUND)
 
-#
-# @api_view(['GET'])
-# @permission_classes([IsAuthenticated])
-# def get_link(request):
-#     user_id = request.user.id
-#     file_id = request.data['file_id']
-#
-#     file = File.objects.filter(user_id=user_id).filter(id=file_id).first()
-#
-#     if file:
-#         data = {
-#             'link': file.public_download_id,
-#         }
-#
-#         return Response(data, status=status.HTTP_200_OK)
-#
-#     return Response(status=status.HTTP_204_NO_CONTENT)
-#
-#
-# @api_view(['GET'])
-# def get_file(request, link):
-#     file = File.objects.filter(public_download_id=link).first()
-#
-#     if file:
-#         file.last_download_date = date.today()
-#         file.save()
-#
-#         return FileResponse(file.file, status.HTTP_200_OK, as_attachment=True, filename=file.native_file_name)
-#
-#     return Response(status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_link(request):
+    user_id = request.user.id
+    file_id = request.query_params['file_id']
+
+    if request.user.is_staff:
+        file = File.objects.filter(id=file_id).first()
+    else:
+        file = File.objects.filter(user_id=user_id).filter(id=file_id).first()
+
+    if file:
+        data = {
+            'link': file.download_link,
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+def get_file(request, link):
+    file = File.objects.filter(download_link=link).first()
+
+    if file:
+        file.last_download_date = date.today()
+        file.save()
+
+        return FileResponse(file.file, status.HTTP_200_OK, as_attachment=True, filename=file.file_name)
+
+    return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_detail_user_list(request):
+    result = User.objects.annotate(size=Sum('file__size'), count=Count('file__id')).values(
+        'id', 'username', 'first_name', 'last_name', 'email', 'count', 'size', 'is_staff')
+
+    if result:
+        return Response(result, status=status.HTTP_200_OK)
+
+    return Response(status=status.HTTP_404_NOT_FOUND)

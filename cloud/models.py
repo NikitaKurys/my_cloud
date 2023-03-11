@@ -1,21 +1,35 @@
+from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import User
 from django.db import models
 
-from cloud.utils import get_image_path, get_file_path, get_download_link
+from cloud.utils import get_file_path, get_download_link
 
 
-class Profile(models.Model):
-    """Профиль юзера"""
+class UserManager(BaseUserManager):
+    def _create_user(self, email, username, password, **extra_fields):
+        if not email:
+            raise ValueError('No email specified')
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name='пользователь')
-    avatar = models.ImageField(upload_to=get_image_path, default='default/avatar.svg', verbose_name='аватар')
+        if not username:
+            raise ValueError('No username specified')
 
-    class Meta:
-        verbose_name = 'Профиль пользователя'
-        verbose_name_plural = verbose_name
+        user = self.model(
+            email=self.normalize_email(email),
+            username=username,
+            **extra_fields,
+        )
 
-    def __str__(self):
-        return self.user.username
+        user.set_password(password)
+
+        user.save(using=self._db)
+
+        return user
+
+    def create_user(self, email, username, password):
+        return self._create_user(email, username, password)
+
+    def create_superuser(self, email, username, password):
+        return self._create_user(email, username, password, is_staff=True, is_superuser=True)
 
 
 class File(models.Model):
@@ -33,28 +47,3 @@ class File(models.Model):
     class Meta:
         verbose_name = 'Файлы'
         verbose_name_plural = verbose_name
-
-
-class UserLog(models.Model):
-    """Журнал посещений пользователя"""
-
-    ACTIONS = [
-        ('0', 'войти'),
-        ('1', 'опубликовывать'),
-        ('2', 'Ошибка входа')
-    ]
-
-    username = models.CharField(max_length=128, verbose_name='имя пользователя')
-    ipaddress = models.GenericIPAddressField(verbose_name='IP-адрес :')
-    browser = models.CharField(max_length=200, verbose_name='браузер')
-    os = models.CharField(max_length=30, verbose_name='операционная система')
-    action = models.CharField(max_length=1, choices=ACTIONS, verbose_name='действия')
-    msg = models.CharField(max_length=100, verbose_name='данные')
-    action_time = models.DateTimeField(auto_now_add=True, verbose_name='время')
-
-    class Meta:
-        verbose_name = 'Журнал посещений пользователя'
-        verbose_name_plural = verbose_name
-
-    def __str__(self):
-        return self.ipaddress

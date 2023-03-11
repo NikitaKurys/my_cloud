@@ -1,15 +1,7 @@
 from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 
-from .models import Profile, File, UserLog
-
-
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    autocomplete_fields = ('user',)
-    search_fields = ('user__username',)
-    list_display = ('user', 'avatar')
-    list_per_page = 10
+from .models import File
 
 
 @admin.register(File)
@@ -20,17 +12,6 @@ class ProfileAdmin(admin.ModelAdmin):
                     'comment', 'download_link', 'file')
     list_filter = ('user', 'file_name',)
     list_per_page = 10
-
-
-@admin.register(UserLog)
-class UserLogAdmin(admin.ModelAdmin):
-    search_fields = ('username',)
-    list_display = ('username', 'ipaddress', 'browser', 'os', 'action', 'action_time')
-    list_filter = ('action',)
-    list_per_page = 15
-
-    def has_add_permission(self, request):
-        return False
 
 
 @admin.register(LogEntry)

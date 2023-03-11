@@ -1,27 +1,47 @@
+import os.path
+
 from rest_framework import serializers
 from django.core import files
 
-from cloud.utils import get_file_path, get_download_link
+from cloud.utils import get_download_link
 from cloud.validators import file_validator
-from .models import User, File, Profile
+from .models import User, File
 
 
-class UserRegistrSerializer(serializers.ModelSerializer):
+class RegistrUserSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField()
+
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'password', ]
+        fields = ['email', 'username', 'first_name', 'last_name', 'password', 'password2']
 
     def save(self):
         user = User(
+            email=self.validated_data['email'],
             username=self.validated_data['username'],
             first_name=self.validated_data['first_name'],
-            last_name=self.validated_data['last_name'],
-            password=self.validated_data['password'],
-            email=self.validated_data['email'],
+            last_name=self.validated_data['last_name']
         )
 
+        password = self.validated_data['password']
+        password2 = self.validated_data['password2']
+
+        if password != password2:
+            raise serializers.ValidationError({
+                password: 'password does not match',
+            })
+
+        user.set_password(password)
+
         user.save()
+
         return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'is_staff']
 
 
 class FileSerializer(serializers.ModelSerializer):
@@ -34,17 +54,15 @@ class FileSerializer(serializers.ModelSerializer):
 
         file = files.File(self.validated_data['file'])
         user = User.objects.filter(id=kwargs['user_id']).first()
-
         data = {
             'user': user,
             'file_name': file.name,
-            'path_to_the_file': get_file_path,
+            'path_to_the_file': f'media/files/{user}/{file.name}',
             'size': file.size,
             'comment': self.validated_data['comment'],
-            'download_link': get_download_link,
+            'download_link': get_download_link(),
             'file': self.validated_data['file'],
         }
-
         try:
             file_model = File.objects.create(**data)
 
@@ -67,3 +85,5 @@ class FileSerializer(serializers.ModelSerializer):
             file.comment = validated_data['comment']
 
             return file.save()
+
+
