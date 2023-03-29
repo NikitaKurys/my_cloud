@@ -13,7 +13,7 @@ git clone https://github.com/NikitaKurys/my_cloud
 ```
 2) Активируйте виртуальное окружение и скачайте необходимые библиотеки: 
 ```
-cd ../.../My_cloud
+cd ../.../my_cloud
 ```
 ```
 python -m venv env
@@ -41,7 +41,7 @@ pip install -r requirements.txt
 ```
 python manage.py migrate
 ```
-6) В директории `frontend/` установите NPM зависимости.
+6) В директории `frontend/my_cloud/` установите NPM зависимости.
 ```
 npm install
 ```
