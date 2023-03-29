@@ -1,0 +1,20 @@
+.file-edit-panel {
+  position: fixed;
+  bottom: 20%;
+  right: 12%;
+  width: 10%;
+  display: table;
+  justify-content: space-between;
+}
+
+.file-edit-panel--item {
+  background-color: #cf9f27;
+  padding: 15px;
+  border-radius: 30px;
+  box-shadow: -2px 5px 23px -5px grey;
+  cursor: pointer;
+}
+
+.file-edit-panel--item:hover {
+  background-color: #274bcf;
+}

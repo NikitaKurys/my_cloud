@@ -1,0 +1,15 @@
+#/bin/bash
+
+source env/bin/activate
+
+cd frontend/my_cloud/
+
+npm start &
+
+pip install -r requirements.txt
+
+cd ../../settings.py change DATABASES.settings
+
+cd ../../
+
+python manage.py runserver 8080
