@@ -3,29 +3,34 @@ from datetime import date
 from django.http import FileResponse
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from cloud.models import File
+from cloud.models import File, file_system
 from cloud.serializers import FileSerializer
 
 
-class FileView(CreateAPIView):
+class FileView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = FileSerializer
 
-    def get_queryset(self):
-        if self.request.user.is_staff:
-            return File.objects.all()
+    def get_queryset(self, user_id=None):
+
+        if self.request.user.is_staff and user_id:
+            return File.objects.filter(user=user_id).all()
 
         return File.objects.filter(user=self.request.user.id).all()
 
     def get(self, request):
 
         if 'id' not in request.query_params:
-            files = self.get_queryset().values('id', 'size', 'upload_date',
-                                               'last_download_date', 'comment', 'file', 'file_name')
+            user_id = None
+
+            if 'user_id' in request.query_params:
+                user_id = request.query_params['user_id']
+
+            files = self.get_queryset(user_id).values('id', 'user__username', 'size', 'file_name', 'upload_date',
+                                                      'last_download_date', 'comment')
             return Response(files)
 
         file = self.get_queryset().filter(id=request.query_params['id']).first()
@@ -49,8 +54,8 @@ class FileView(CreateAPIView):
         if serializer.is_valid():
             serializer.create(user_id=request.user.id, file=request.FILES['file'])
 
-            data = self.get_queryset().values('id', 'user__username', 'size', 'path_to_the_file', 'upload_date',
-                                              'last_download_date', 'comment', 'file_name')
+            data = self.get_queryset().values('id', 'user__username', 'size', 'file_name', 'upload_date',
+                                              'last_download_date', 'comment')
 
             return Response(data, status=status.HTTP_200_OK)
 
@@ -64,12 +69,34 @@ class FileView(CreateAPIView):
         data = {}
 
         if serializer.is_valid():
+            user = request.user
+
             serializer.patch(
-                user_id=request.user.id,
+                user=user,
             )
 
-            data = self.get_queryset().values('id', 'user__username', 'size', 'file_name', 'upload_date',
-                                              'last_download_date', 'comment')
+            if 'user_storage_id' in request.query_params and user.is_staff:
+                data = self.get_queryset(
+                    user_id=request.query_params['user_storage_id']
+                ).values(
+                    'id',
+                    'user__username',
+                    'size',
+                    'file_name',
+                    'upload_date',
+                    'last_download_date',
+                    'comment',
+                )
+            else:
+                data = self.get_queryset().values(
+                    'id',
+                    'user__username',
+                    'size',
+                    'file_name',
+                    'upload_date',
+                    'last_download_date',
+                    'comment'
+                )
 
             return Response(data)
 
@@ -79,16 +106,42 @@ class FileView(CreateAPIView):
 
     def delete(self, request):
         if request.user.is_staff:
-            deleted_file = File.objects.filter(id=int(request.query_params['id'])).first()
+            deleted_file = File.objects.filter(
+                id=int(request.query_params['id'])
+            ).first()
         else:
-            deleted_file = File.objects.filter(user_id=request.user.id).all().filter(
-                id=int(request.query_params['id'])).first()
+            deleted_file = File.objects.filter(
+                user_id=request.user.id
+            ).all().filter(
+                id=int(request.query_params['id'])
+            ).first()
 
         if deleted_file:
+            file_system.delete(deleted_file.path_to_the_file)
+
             deleted_file.delete()
 
-            data = self.get_queryset().values('id', 'user__username', 'size', 'file_name', 'upload_date',
-                                              'last_download_date', 'comment')
+            user = request.user
+
+            if 'user_storage_id' in request.query_params and user.is_staff:
+                data = self.get_queryset(
+                    user_id=request.query_params['user_storage_id']
+                ).values(
+                    'id',
+                    'user__username',
+                    'size', 'file_name',
+                    'upload_date', 'last_download_date',
+                    'comment',
+                )
+            else:
+                data = self.get_queryset().values(
+                    'id',
+                    'user__username',
+                    'size', 'file_name',
+                    'upload_date',
+                    'last_download_date',
+                    'comment',
+                )
 
             return Response(data, status.HTTP_200_OK)
 

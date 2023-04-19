@@ -3,7 +3,7 @@ import os.path
 from rest_framework import serializers
 from django.core import files
 
-from cloud.utils import get_download_link
+from cloud.utils import get_download_link, generate_storage_file_name
 from cloud.validators import file_validator
 from .models import User, File
 
@@ -54,10 +54,11 @@ class FileSerializer(serializers.ModelSerializer):
 
         file = files.File(self.validated_data['file'])
         user = User.objects.filter(id=kwargs['user_id']).first()
+        path_to_the_file = generate_storage_file_name(file.name)
         data = {
             'user': user,
             'file_name': file.name,
-            'path_to_the_file': f'media/files/{user}/{file.name}',
+            'path_to_the_file': path_to_the_file,
             'size': file.size,
             'comment': self.validated_data['comment'],
             'download_link': get_download_link(),

@@ -19,4 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('api/v1/cloud/', include('cloud.urls')),
+    path('', include('frontend.urls')),
 ]
+

@@ -1,0 +1,71 @@
+.header {
+  display: flex;
+  width: 80%;
+  height: 60px;
+  background-color: orange;
+  margin: 10px auto;
+  border-radius: 70px;
+  padding: 0 90px;
+  align-items: center;
+}
+
+.header--logo {
+  color: black;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 900;
+  font-size: 2em;
+}
+
+.header--menu-container {
+  display: block;
+  margin: 40px 0;
+  justify-content: space-between;
+  justify-self: end;
+  width: 15%;
+  margin-left: auto;
+  font-weight: 600;
+  color: black;
+  font-size: 1.5em;
+  cursor: pointer;
+}
+
+.header--logo:hover {
+    color: #274bcf;
+}
+
+.header--menu-container--item:hover {
+  color: white;
+  transition: all 500ms;
+}
+
+.header--logout-btn {
+  width: 100%;
+}
+
+.storage-user {
+  color: white;
+  margin-left: 10%;
+  height: 50%;
+  display: flex;
+  align-items: center;
+}
+
+.storage-user--exit-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  height: 100%;
+  background-color: #ff5600;
+  font-size: 1em;
+  color: #f4e5cd;
+  cursor: pointer;
+  border: none;
+  border-radius: 3px;
+  margin: 15px;
+}
+
+.storage-user--exit-btn:hover {
+  background-color: #274bcf;
+  transition: all 500ms;
+}

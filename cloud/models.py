@@ -1,8 +1,12 @@
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import User
+from django.core.files.storage import FileSystemStorage
 from django.db import models
 
-from cloud.utils import get_file_path, get_download_link
+from cloud.utils import get_download_link
+
+
+file_system = FileSystemStorage(location='user_storage')
 
 
 class UserManager(BaseUserManager):
@@ -42,7 +46,7 @@ class File(models.Model):
     last_download_date = models.DateField(null=True, verbose_name='дата скачивания')
     comment = models.TextField(max_length=100, null=True, verbose_name='комментарии')
     download_link = models.CharField(null=True, max_length=50, default=get_download_link, verbose_name='ссылка для скачивания')
-    file = models.FileField(upload_to=get_file_path, blank=True)
+    file = models.FileField(storage=file_system, blank=True)
 
     class Meta:
         verbose_name = 'Файлы'
