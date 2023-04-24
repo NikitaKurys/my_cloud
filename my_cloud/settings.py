@@ -106,14 +106,6 @@ DATABASES = {
         'PORT': env.int('DB_PORT'),
     }
 }
-DJOSER = {
-    'ACTIVATION_URL': '#/activate/{uid}/{token}',
-    'SEND_ACTIVATION_EMAIL': False,
-    'SERIALIZERS': {
-        'user': 'cloud.serializers.UserSerializer',
-        'current_user': 'cloud.serializers.UserSerializer',
-    }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

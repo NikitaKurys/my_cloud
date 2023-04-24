@@ -87,17 +87,17 @@ function SignUpForm() {
         {page === 1
           ? (
             <>
+              <input type="email" placeholder="почта" ref={email} required />
               <input type="text" placeholder="псевдоним" ref={username} required />
               <input type="password" placeholder="пароль" ref={password} required />
               <input type="password" placeholder="повторите пароль" ref={password2} required />
-              <input type="email" placeholder="почта" ref={email} required />
               <input type="submit" value="OK" />
             </>
           )
           : (
             <>
-              <input type="text" placeholder="first name" ref={firstName} />
-              <input type="text" placeholder="last name" ref={lastName} />
+              <input type="text" placeholder="Имя" ref={firstName} />
+              <input type="text" placeholder="Фамилия" ref={lastName} />
               <input type="submit" value="OK" />
             </>
           )}

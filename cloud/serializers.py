@@ -80,11 +80,9 @@ class FileSerializer(serializers.ModelSerializer):
 
         validated_data = file_validator(self.initial_data)
 
-        file = File.objects.filter(user_id=kwargs['user_id']).all().filter(id=validated_data['id']).first()
+        file = File.objects.filter(user_id=kwargs['user'].id).filter(id=validated_data['id']).first()
         if file:
             file.file_name = validated_data['file_name']
             file.comment = validated_data['comment']
 
             return file.save()
-
-
