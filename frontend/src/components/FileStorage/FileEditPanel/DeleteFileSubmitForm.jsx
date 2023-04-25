@@ -55,13 +55,13 @@ function DeleteFileSubmitForm({
         />
       </button>
       <div
-        className="Нет"
+        className="no"
         onClick={onCloseHandler}
         onKeyDown={onCloseHandler}
         role="button"
         tabIndex={0}
       >
-        No
+        Нет
       </div>
     </form>
   );

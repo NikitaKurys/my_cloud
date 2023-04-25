@@ -20,7 +20,7 @@ def login_view(request):
 
     if username is None or password is None:
         return JsonResponse({
-            "message": "Please enter both username and password"
+            "message": "Please enter both email and password"
         }, status=400)
 
     user = authenticate(username=username, password=password)
@@ -55,3 +55,4 @@ def me_view(request):
         "username": data.username,
         "isAdmin": data.is_staff,
     })
+

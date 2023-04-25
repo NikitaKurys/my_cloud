@@ -1,14 +1,13 @@
+from django.http import FileResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from datetime import date
 
-from django.http import FileResponse
-from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from cloud.models import File, file_system
-from cloud.serializers import FileSerializer
+from ..models import file_system, File
+from ..serializers import FileSerializer
 
 
 class FileView(APIView):
@@ -22,7 +21,7 @@ class FileView(APIView):
         return File.objects.filter(user=self.request.user.id).all()
 
     def get(self, request):
-
+        print(request.query_params)
         if 'id' not in request.query_params:
             user_id = None
 
@@ -165,7 +164,7 @@ def get_link(request):
 
     if file:
         data = {
-            'link': file.download_link,
+            'link': file.public_download_id,
         }
 
         return Response(data, status=status.HTTP_200_OK)
@@ -175,7 +174,7 @@ def get_link(request):
 
 @api_view(['GET'])
 def get_file(request, link):
-    file = File.objects.filter(download_link=link).first()
+    file = File.objects.filter(public_download_id=link).first()
 
     if file:
         file.last_download_date = date.today()

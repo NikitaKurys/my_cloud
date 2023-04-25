@@ -68,3 +68,22 @@ def delete_user(request, user_id):
     return JsonResponse({
         "message": 'User not found',
     }, status=404)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAdminUser])
+def patch_user(request, user_id):
+
+    user = User.objects.get(id=user_id)
+    if user:
+        user.is_staff = request.data['is_staff']
+        user.save()
+
+        return JsonResponse({
+            "message": "user deleted",
+        })
+
+    return JsonResponse({
+        "message": 'User not found',
+    }, status=404)
+

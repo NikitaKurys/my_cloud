@@ -2,11 +2,12 @@ from django.urls import path
 
 from cloud.views.auth_views import login_view, logout_view, get_csrf_token, me_view
 from cloud.views.file_views import FileView, get_link, get_file
-from cloud.views.user_views import delete_user, RegUserView, get_detail_user_list
+from cloud.views.user_views import delete_user, RegUserView, get_detail_user_list, patch_user
 
 app_name = 'cloud'
 
 urlpatterns = [
+    path('auth/users/<int:user_id>/', patch_user),
     path('auth/login/', login_view),
     path('auth/logout/', logout_view),
     path('auth/get_csrf/', get_csrf_token),

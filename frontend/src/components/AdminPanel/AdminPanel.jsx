@@ -9,7 +9,7 @@ function AdminPanel() {
   if (!isAdmin) {
     return (
       <div className="admin-panel--access-denied">
-        <span className="content">У вас нет доступа к панели администратора</span>
+        <span className="content">У вас нет доступа к панели</span>
       </div>
     );
   }
